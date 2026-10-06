@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuaderno interactivo: Estadística — Undécimo año</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --paper:#F1F0F5;
+    --paper-line:#E1DEEA;
+    --ink:#211B2E;
+    --ink-soft:#5B5470;
+    --accent:#7C5CBF;
+    --accent-soft:#EAE1F7;
+    --ok:#2F9E6E;
+    --ok-soft:#DCF3E8;
+    --bad:#C24444;
+    --bad-soft:#FBE1E1;
+    --card:#FFFFFF;
+    --slate:#2B2440;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      repeating-linear-gradient(135deg, var(--paper-line) 0 1px, transparent 1px 22px),
+      var(--paper);
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    padding:28px 18px 70px;
+    min-height:100vh;
+  }
+  .wrap{max-width:940px;margin:0 auto;}
+
+  .progress-wrap{
+    position:fixed;left:0;bottom:0;width:100%;
+    background:#fff;border-top:1px solid #E4E0EE;
+    padding:9px 18px 10px;z-index:50;
+    box-shadow:0 -6px 16px -10px rgba(33,27,46,.25);
+  }
+  .progress-track{
+    height:8px;max-width:940px;margin:0 auto 6px;
+    background:#EAE6F2;border-radius:999px;overflow:hidden;
+  }
+  .progress-fill{height:100%;width:33.3%;background:var(--accent);transition:width .3s ease;}
+  .progress-label{max-width:940px;margin:0 auto;text-align:center;font-size:12px;color:var(--ink-soft);}
+
+  .top-banner{
+    background:linear-gradient(135deg,#211B2E,#3A2E5C);
+    color:#fff;border-radius:16px;padding:24px 28px;margin-bottom:22px;
+    box-shadow:0 18px 40px -22px rgba(33,27,46,.5);
+  }
+  .top-banner h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:clamp(21px,3.2vw,29px);
+    font-weight:600;margin:0 0 8px;line-height:1.15;
+  }
+  .top-banner .sub{margin:0 0 10px;font-size:15px;opacity:.92;}
+  .top-banner .authors{margin:0;font-size:13px;opacity:.72;}
+
+  .binder{display:flex;gap:0;background:var(--card);border-radius:18px;box-shadow:0 18px 40px -22px rgba(33,27,46,.35);overflow:hidden;border:1px solid #E9E5F1;}
+  .spiral{
+    flex:0 0 34px;
+    background:repeating-linear-gradient(180deg, transparent 0 18px, #EEEAF6 18px 20px);
+    position:relative;
+    border-right:1px dashed #D8D2E6;
+  }
+  .spiral span{
+    position:absolute;left:50%;transform:translateX(-50%);
+    width:12px;height:12px;border-radius:50%;
+    background:var(--paper);border:2px solid #C4BAD8;
+  }
+  .card-body{flex:1;min-width:0;padding:26px 30px 34px;}
+
+  .tabs{display:flex;gap:8px;margin-bottom:22px;border-bottom:2px solid #ECE7F5;}
+  .tab-btn{
+    font-family:'Space Grotesk',sans-serif;
+    font-weight:600;font-size:15px;
+    background:#F5F3FA;color:var(--ink-soft);
+    border:1px solid #ECE7F5;border-bottom:none;
+    padding:10px 18px 12px;
+    border-radius:12px 12px 0 0;
+    cursor:pointer;
+    transform:translateY(2px);
+    transition:transform .15s ease, color .15s ease, background .15s ease;
+  }
+  .tab-btn:hover{color:var(--ink);}
+  .tab-btn.active{
+    background:var(--card);
+    color:var(--accent);
+    border-color:#ECE7F5;
+    transform:translateY(0);
+    box-shadow:0 -2px 0 var(--accent) inset;
+  }
+
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  .lead{color:var(--ink-soft);font-size:14.5px;line-height:1.6;margin:0 0 22px;max-width:66ch;}
+  .lead b{color:var(--ink);}
+
+  .rubric-title{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;
+    font-size:22px;margin:0 0 6px;color:var(--ink);
+    border-bottom:2px solid var(--accent);padding-bottom:8px;
+  }
+
+  .feedback-box{
+    border-left:4px solid var(--accent);
+    background:#F7F3FC;
+    border-radius:0 10px 10px 0;
+    padding:12px 16px;margin-bottom:10px;
+    font-size:13.5px;line-height:1.55;color:var(--ink);
+  }
+  .feedback-box b{color:var(--accent);}
+
+  .student-hint{font-size:13.5px;color:var(--ink-soft);margin:0 0 8px;}
+  .student-hint b{color:var(--ink);}
+  .student-bar{display:flex;flex-wrap:wrap;gap:14px;background:#F5F3FA;border:1px solid #ECE7F5;border-radius:12px;padding:12px 16px;margin-bottom:20px;}
+  .student-field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:180px;}
+  .student-field label{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);font-weight:600;}
+  .student-field input, .student-field select{
+    border:1.5px solid #DED7EC;border-radius:8px;padding:8px 10px;
+    font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);background:#fff;
+  }
+  .student-field input:focus, .student-field select:focus{outline:none;border-color:var(--accent);}
+  .student-field.section-field{max-width:200px;}
+
+  .qcard{border:1px solid #ECE7F5;border-radius:14px;padding:18px 20px 20px;margin-bottom:16px;background:#FCFBFE;}
+  .qhead{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .qnum{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;
+    width:28px;height:28px;border-radius:50%;
+    background:var(--slate);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:13.5px;
+    flex:0 0 auto;
+  }
+  .qmeta{font-size:11.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);font-weight:600;}
+  .qprompt{font-size:15.5px;line-height:1.55;margin:0 0 14px;color:var(--ink);}
+  .qtable{border-collapse:collapse;margin:0 0 14px;font-size:13.5px;}
+  .qtable th,.qtable td{border:1px solid #DED7EC;padding:6px 10px;text-align:center;}
+  .qtable th{background:#F5F3FA;font-family:'Space Grotesk',sans-serif;}
+
+  .opts{display:flex;flex-direction:column;gap:8px;}
+  .opt{
+    display:flex;align-items:center;gap:10px;
+    border:1.5px solid #E4DFF0;border-radius:10px;
+    padding:10px 12px;cursor:pointer;
+    background:#fff;font-size:14.5px;
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .opt:hover{border-color:var(--accent);}
+  .opt.selected{border-color:var(--accent);background:var(--accent-soft);}
+  .opt input{accent-color:var(--accent);width:16px;height:16px;flex:0 0 auto;}
+
+  .actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;}
+  .btn{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:14.5px;
+    border:none;border-radius:10px;padding:12px 22px;cursor:pointer;
+    background:var(--accent);color:#fff;
+    transition:filter .12s ease;
+  }
+  .btn:hover{filter:brightness(1.06);}
+  .btn.secondary{background:#F1EDF9;color:var(--ink);border:1px solid #E4DFF0;}
+  .btn:disabled{background:#D2CBE0;cursor:not-allowed;}
+
+  .notice{border:1.5px dashed #D2CBE0;border-radius:12px;padding:26px 20px;text-align:center;color:var(--ink-soft);font-size:14.5px;}
+
+  .score-hero{
+    display:flex;align-items:center;gap:22px;flex-wrap:wrap;
+    background:linear-gradient(135deg,#211B2E,#3A2E5C);
+    color:#fff;border-radius:16px;padding:22px 26px;margin-bottom:22px;
+  }
+  .score-ring{position:relative;width:96px;height:96px;flex:0 0 auto;}
+  .score-ring svg{transform:rotate(-90deg);}
+  .score-ring .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:19px;}
+  .score-text h2{font-family:'Space Grotesk',sans-serif;margin:0 0 4px;font-size:20px;}
+  .score-text p{margin:0;font-size:13.5px;opacity:.85;}
+
+  table.rubric{width:100%;border-collapse:collapse;font-size:13.3px;margin-top:6px;}
+  table.rubric th, table.rubric td{border:1px solid #ECE7F5;padding:10px;text-align:left;vertical-align:top;line-height:1.45;}
+  table.rubric th{background:#211B2E;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:12.8px;}
+  table.rubric td.crit{font-weight:600;background:#F5F3FA;width:19%;}
+  table.rubric td.level0{background:#FBE1E1;}
+  table.rubric td.level1{background:#FCEFD8;}
+  table.rubric td.level2{background:#FFF6D9;}
+  table.rubric td.level3{background:#DCF3E8;}
+  table.rubric td.pts{width:9%;text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:600;}
+  .achieved{outline:3px solid var(--accent);outline-offset:-3px;position:relative;}
+  .achieved::after{content:"✓ obtenido";position:absolute;top:4px;right:6px;font-size:10px;font-weight:700;color:var(--accent);}
+  .total-row td{background:#211B2E !important;color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:600;}
+
+  .footnote{color:var(--ink-soft);font-size:12.5px;margin-top:18px;line-height:1.6;}
+
+  @media (max-width:640px){
+    .card-body{padding:20px 16px 28px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top-banner">
+    <h1>Cuaderno Interactivo — Estadística</h1>
+    <p class="sub">Medidas de posición, variabilidad, diagramas de caja y estandarización · Undécimo año · Liceo de Paraíso</p>
+    <p class="authors">Material de repaso elaborado con base en la tabla de especificaciones del Departamento de Matemática</p>
+  </div>
+
+  <div class="binder">
+    <div class="spiral" id="spiral"></div>
+    <div class="card-body">
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="rubrica">📋 Rúbrica</button>
+        <button class="tab-btn" data-tab="resultados">📊 Resultados</button>
+        <button class="tab-btn" data-tab="ejercicios">📝 Selección única</button>
+      </div>
+
+      <!-- RÚBRICA -->
+      <div class="panel active" id="panel-rubrica">
+        <h2 class="rubric-title">Rúbrica de evaluación</h2>
+        <p class="lead">Esta rúbrica describe los criterios con los que se evalúa el desempeño del estudiante en el cuestionario de selección única, construido sobre <b>4 habilidades específicas</b> de la unidad de Estadística: medidas de posición, variabilidad, diagramas de caja y estandarización/media ponderada. La columna resaltada se completa automáticamente según las respuestas del estudiante; puede descargarse en PDF para entregarla impresa al docente. Valor total: <b>12 puntos</b> (4 criterios × 3 puntos).</p>
+
+        <p class="student-hint">✏️ El estudiante debe escribir su <b>nombre completo</b> y seleccionar su <b>sección</b> antes de calificar el cuaderno.</p>
+        <div class="student-bar">
+          <div class="student-field">
+            <label for="input-nombre">Nombre del estudiante</label>
+            <input type="text" id="input-nombre" placeholder="Nombre completo del estudiante">
+          </div>
+          <div class="student-field section-field">
+            <label for="input-seccion">Sección</label>
+            <select id="input-seccion">
+              <option value="" disabled selected>Seleccione su sección</option>
+              <option value="11-1">11-1</option>
+              <option value="11-2">11-2</option>
+              <option value="11-3">11-3</option>
+              <option value="11-4">11-4</option>
+              <option value="11-5">11-5</option>
+              <option value="11-6">11-6</option>
+              <option value="11-7">11-7</option>
+              <option value="11-8">11-8</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="rubrica-static"></div>
+      </div>
+
+      <!-- RESULTADOS -->
+      <div class="panel" id="panel-resultados">
+        <div id="resultados-content">
+          <div class="notice">El estudiante debe responder los 30 ítems en la pestaña <b>Selección única</b> y presionar «Calificar cuaderno» para ver aquí su puntaje y la rúbrica evaluada.</div>
+        </div>
+        <div class="actions" id="resultados-actions" style="display:none;">
+          <button class="btn secondary" id="btn-pdf">⬇️ Descargar PDF</button>
+        </div>
+      </div>
+
+      <!-- EJERCICIOS -->
+      <div class="panel" id="panel-ejercicios">
+        <p class="lead"><b>Indicaciones:</b> el estudiante debe leer cada ítem con cuidado y seleccionar la única opción correcta. Los ejercicios están ordenados de menor a mayor complejidad y responden a las cuatro habilidades específicas de la unidad de Estadística. Al terminar, debe presionar <b>«Calificar cuaderno»</b> para ver sus resultados y la rúbrica evaluada.</p>
+        <div id="questions"></div>
+        <div class="actions">
+          <button class="btn secondary" id="btn-clear">Borrar respuestas</button>
+          <button class="btn" id="btn-grade">Calificar cuaderno</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <p class="footnote">Cuaderno generado para uso docente, con base en la tabla de especificaciones de la unidad «Estadística» (medidas de posición, variabilidad, diagramas de cajas y estandarización) — undécimo año. Los ejercicios son de elaboración propia y no corresponden a los de ninguna prueba aplicada.</p>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="progress-label" id="progress-label">Progreso: 1/3 pestañas visitadas</div>
+</div>
+
+<script>
+/* ---------- decorative spiral dots ---------- */
+(function(){
+  const s=document.getElementById('spiral');
+  for(let i=0;i<26;i++){
+    const dot=document.createElement('span');
+    dot.style.top=(20+i*30)+'px';
+    s.appendChild(dot);
+  }
+})();
+
+/* ---------- SVG diagram: two box plots ---------- */
+const svgBoxplot2 = `<svg viewBox="0 0 420 150">
+  <defs>
+    <linearGradient id="boxGradA" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#EAE1F7"/><stop offset="100%" stop-color="#C9B3E8"/>
+    </linearGradient>
+  </defs>
+  <text x="10" y="22" font-size="12" font-family="Space Grotesk" fill="#2B2440" font-weight="700">GRUPO A</text>
+  <line x1="60" y1="35" x2="380" y2="35" stroke="#2B2440" stroke-width="2"/>
+  <line x1="88" y1="20" x2="88" y2="50" stroke="#2B2440" stroke-width="2.2"/>
+  <line x1="340" y1="20" x2="340" y2="50" stroke="#2B2440" stroke-width="2.2"/>
+  <rect x="163" y="18" width="157" height="34" fill="url(#boxGradA)" stroke="#2B2440" stroke-width="2"/>
+  <line x1="223" y1="18" x2="223" y2="52" stroke="#C24444" stroke-width="2.6"/>
+  <text x="74" y="66" font-size="11" font-family="Space Grotesk" fill="#2B2440">20</text>
+  <text x="151" y="66" font-size="11" font-family="Space Grotesk" fill="#2B2440">25</text>
+  <text x="211" y="12" font-size="11" font-family="Space Grotesk" fill="#C24444" font-weight="700">30</text>
+  <text x="308" y="66" font-size="11" font-family="Space Grotesk" fill="#2B2440">38</text>
+  <text x="328" y="66" font-size="11" font-family="Space Grotesk" fill="#2B2440">45</text>
+
+  <text x="10" y="100" font-size="12" font-family="Space Grotesk" fill="#2B2440" font-weight="700">GRUPO B</text>
+  <line x1="60" y1="113" x2="380" y2="113" stroke="#2B2440" stroke-width="2"/>
+  <line x1="96" y1="98" x2="96" y2="128" stroke="#2B2440" stroke-width="2.2"/>
+  <line x1="320" y1="98" x2="320" y2="128" stroke="#2B2440" stroke-width="2.2"/>
+  <rect x="140" y="96" width="160" height="34" fill="url(#boxGradA)" stroke="#2B2440" stroke-width="2"/>
+  <line x1="250" y1="96" x2="250" y2="130" stroke="#C24444" stroke-width="2.6"/>
+  <text x="82" y="144" font-size="11" font-family="Space Grotesk" fill="#2B2440">22</text>
+  <text x="128" y="144" font-size="11" font-family="Space Grotesk" fill="#2B2440">24</text>
+  <text x="238" y="90" font-size="11" font-family="Space Grotesk" fill="#C24444" font-weight="700">33</text>
+  <text x="290" y="144" font-size="11" font-family="Space Grotesk" fill="#2B2440">36</text>
+  <text x="310" y="144" font-size="11" font-family="Space Grotesk" fill="#2B2440">40</text>
+</svg>`;
+
+/* ---------- question bank ---------- */
+/* skill 1: medidas de posición (moda, media, mediana, cuartiles, mín, máx)
+   skill 2: variabilidad (recorrido, RIQ, varianza, desviación estándar)
+   skill 3: diagramas de caja (posición y variabilidad de uno o más grupos)
+   skill 4: estandarización (posición relativa, CV) y media ponderada */
+const questions = [
+  { id:1, skill:1, diff:'Inicial', prompt:'Las edades (en años) de 7 personas en una reunión familiar son: 12, 15, 12, 18, 20, 12, 15. ¿Cuál es la <b>moda</b> de esos datos?',
+    options:[{key:'A',text:'12'},{key:'B',text:'15'},{key:'C',text:'18'}], correct:'A' },
+  { id:2, skill:1, diff:'Inicial', prompt:'Las calificaciones de 5 estudiantes en un quiz fueron: 23, 19, 30, 25, 21. ¿Cuál es la <b>mediana</b> de esas calificaciones?',
+    options:[{key:'A',text:'21'},{key:'B',text:'23'},{key:'C',text:'25'}], correct:'B' },
+  { id:3, skill:1, diff:'Inicial', prompt:'Los pesos (en kg) de 6 paquetes de una empresa de envíos son: 8, 10, 9, 11, 7, 12. ¿Cuál es la <b>media aritmética</b> de esos pesos?',
+    options:[{key:'A',text:'9'},{key:'B',text:'9,5'},{key:'C',text:'10'}], correct:'B' },
+  { id:4, skill:1, diff:'Inicial', prompt:'Las distancias (en km) recorridas por 6 ciclistas en una competencia fueron: 34, 28, 41, 25, 39, 30. ¿Cuál es el valor <b>mínimo</b> de esos datos?',
+    options:[{key:'A',text:'25'},{key:'B',text:'28'},{key:'C',text:'30'}], correct:'A' },
+  { id:5, skill:1, diff:'Inicial', prompt:'Con los datos de la pregunta anterior (34, 28, 41, 25, 39, 30), ¿cuál es el valor <b>máximo</b>?',
+    options:[{key:'A',text:'34'},{key:'B',text:'39'},{key:'C',text:'41'}], correct:'C' },
+  { id:6, skill:1, diff:'Intermedio', prompt:'Considere los datos ordenados: 5, 7, 9, 12, 15, 18, 20, 22, 25. Usando $Q_k=\\dfrac{k(n+1)}{4}$, ¿cuál es el valor del <b>primer cuartil</b> ($Q_1$)?',
+    options:[{key:'A',text:'7'},{key:'B',text:'8'},{key:'C',text:'9'}], correct:'B' },
+  { id:7, skill:1, diff:'Intermedio', prompt:'Con los mismos datos (5, 7, 9, 12, 15, 18, 20, 22, 25), ¿cuál es el valor de la <b>mediana</b> ($Q_2$)?',
+    options:[{key:'A',text:'12'},{key:'B',text:'15'},{key:'C',text:'18'}], correct:'B' },
+  { id:8, skill:1, diff:'Intermedio', prompt:'Con los mismos datos (5, 7, 9, 12, 15, 18, 20, 22, 25), ¿cuál es el valor del <b>tercer cuartil</b> ($Q_3$)?',
+    options:[{key:'A',text:'20'},{key:'B',text:'21'},{key:'C',text:'22'}], correct:'B' },
+  { id:9, skill:1, diff:'Intermedio', prompt:'El número de goles anotados por un equipo en 8 partidos fue: 4, 6, 4, 8, 6, 10, 4, 6. ¿Cómo se describe la moda de esos datos?',
+    options:[{key:'A',text:'La moda es 4'},{key:'B',text:'La moda es 6'},{key:'C',text:'Es bimodal (4 y 6)'}], correct:'C' },
+  { id:10, skill:1, diff:'Inicial', prompt:'Las temperaturas (en °C) registradas en 6 días fueron: 14, 18, 11, 20, 16, 22. ¿Cuál es la <b>mediana</b> de esos datos?',
+    options:[{key:'A',text:'16'},{key:'B',text:'17'},{key:'C',text:'18'}], correct:'B' },
+
+  { id:11, skill:2, diff:'Inicial', prompt:'Los puntajes obtenidos por 6 participantes en un concurso fueron: 55, 62, 48, 70, 51, 66. ¿Cuál es el <b>recorrido</b> (rango) de esos puntajes?',
+    options:[{key:'A',text:'15'},{key:'B',text:'22'},{key:'C',text:'70'}], correct:'B' },
+  { id:12, skill:2, diff:'Intermedio', prompt:'Considere los datos ordenados: 2, 4, 6, 8, 10, 12, 14. Usando $Q_k=\\dfrac{k(n+1)}{4}$, ¿cuál es el <b>recorrido intercuartílico</b> ($RIQ=Q_3-Q_1$)?',
+    options:[{key:'A',text:'6'},{key:'B',text:'8'},{key:'C',text:'10'}], correct:'B' },
+  { id:13, skill:2, diff:'Avanzado', prompt:'Las horas de estudio semanales de 5 estudiantes son: 10, 12, 14, 16, 18. Usando $\\sigma^2=\\dfrac{\\sum(x-\\bar{x})^2}{n}$, ¿cuál es la <b>varianza</b> de esos datos?',
+    options:[{key:'A',text:'6'},{key:'B',text:'8'},{key:'C',text:'10'}], correct:'B' },
+  { id:14, skill:2, diff:'Avanzado', prompt:'Con los mismos datos de la pregunta anterior (varianza $\\sigma^2=8$), ¿cuál es la <b>desviación estándar</b> ($\\sigma=\\sqrt{\\sigma^2}$)?',
+    options:[{key:'A',text:'$\\sigma \\approx 2{,}83$'},{key:'B',text:'$\\sigma = 4$'},{key:'C',text:'$\\sigma = 8$'}], correct:'A' },
+  { id:15, skill:2, diff:'Avanzado', prompt:'Los puntajes de 5 jugadores en un videojuego son: 30, 34, 26, 38, 22. ¿Cuál es la <b>varianza</b> de esos puntajes?',
+    options:[{key:'A',text:'16'},{key:'B',text:'32'},{key:'C',text:'40'}], correct:'B' },
+  { id:16, skill:2, diff:'Intermedio', prompt:'En una tabla resumen de un estudio estadístico se reporta que $Q_1=18$ y $Q_3=27$. ¿Cuál es el recorrido intercuartílico de esos datos?',
+    options:[{key:'A',text:'9'},{key:'B',text:'18'},{key:'C',text:'27'}], correct:'A' },
+  { id:17, skill:2, diff:'Inicial', prompt:'Las temperaturas máximas (°C) registradas durante una semana en Cartago fueron: 18, 21, 19, 25, 20, 17, 23. ¿Cuál es el recorrido de esos datos?',
+    options:[{key:'A',text:'6'},{key:'B',text:'7'},{key:'C',text:'8'}], correct:'C' },
+  { id:18, skill:2, diff:'Inicial', prompt:'Si la varianza de un grupo de datos es $\\sigma^2=49$, ¿cuál es su desviación estándar?',
+    options:[{key:'A',text:'7'},{key:'B',text:'24,5'},{key:'C',text:'49'}], correct:'A' },
+
+  { id:19, skill:3, diff:'Intermedio', prompt:'Un resumen de cinco números de un grupo de datos muestra: Mínimo=12, $Q_1=18$, Mediana=24, $Q_3=29$, Máximo=35. ¿Cuál es el recorrido intercuartílico de ese grupo?',
+    options:[{key:'A',text:'11'},{key:'B',text:'17'},{key:'C',text:'23'}], correct:'A' },
+  { id:20, skill:3, diff:'Inicial', prompt:'Con el mismo resumen de cinco números (Mín=12, $Q_1=18$, Me=24, $Q_3=29$, Máx=35), ¿cuál es la mediana del grupo de datos?',
+    options:[{key:'A',text:'18'},{key:'B',text:'24'},{key:'C',text:'29'}], correct:'B' },
+  { id:21, skill:3, diff:'Avanzado', prompt:'Con el mismo resumen de cinco números (Mín=12, $Q_1=18$, Me=24, $Q_3=29$, Máx=35), con certeza se cumple que:',
+    options:[{key:'A',text:'El 25% de los datos es menor o igual a $Q_3$'},{key:'B',text:'El 50% de los datos es menor o igual a $Q_3$'},{key:'C',text:'El 75% de los datos es menor o igual a $Q_3$'}], correct:'C' },
+  { id:22, skill:3, diff:'Avanzado', diagram:svgBoxplot2, prompt:'El diagrama de cajas adjunto compara las edades de dos grupos de personas. ¿Cuál grupo presenta mayor variabilidad, según el recorrido intercuartílico (RIQ)?',
+    options:[{key:'A',text:'Grupo A'},{key:'B',text:'Grupo B'},{key:'C',text:'Ambos grupos tienen el mismo RIQ'}], correct:'A' },
+  { id:23, skill:3, diff:'Intermedio', diagram:svgBoxplot2, prompt:'Con el mismo diagrama de cajas, ¿cuál grupo tiene mayor mediana?',
+    options:[{key:'A',text:'Grupo A'},{key:'B',text:'Grupo B'},{key:'C',text:'Ambos grupos tienen la misma mediana'}], correct:'B' },
+
+  { id:24, skill:4, diff:'Intermedio', prompt:'En una prueba, la media del grupo es $\\bar{x}=70$ puntos y la desviación estándar es $\\sigma=8$ puntos. Si Diego obtuvo 86 puntos, usando $z=\\dfrac{x-\\bar{x}}{\\sigma}$, ¿cuál es su posición relativa (valor $z$)?',
+    options:[{key:'A',text:'$z=1{,}5$'},{key:'B',text:'$z=2$'},{key:'C',text:'$z=2{,}5$'}], correct:'B' },
+  { id:25, skill:4, diff:'Avanzado', prompt:'Marco obtuvo 50 puntos en una prueba con $\\bar{x}=42$ y $\\sigma=6$. Valeria obtuvo 80 puntos en otra prueba con $\\bar{x}=65$ y $\\sigma=10$. Usando la posición relativa ($z$), ¿quién tuvo mejor desempeño respecto a su grupo?',
+    options:[{key:'A',text:'Marco'},{key:'B',text:'Valeria'},{key:'C',text:'Ambos tuvieron el mismo desempeño relativo'}], correct:'B' },
+  { id:26, skill:4, diff:'Intermedio', prompt:'La media de los tiempos de entrega de una empresa es $\\bar{x}=70$ minutos con $\\sigma=8$ minutos. Usando $CV=\\left(\\dfrac{\\sigma}{\\bar{x}}\\right)\\cdot100\\%$, ¿cuál es el coeficiente de variación de esos tiempos?',
+    options:[{key:'A',text:'$CV=8\\%$'},{key:'B',text:'$CV=11{,}43\\%$'},{key:'C',text:'$CV=70\\%$'}], correct:'B' },
+  { id:27, skill:4, diff:'Avanzado', prompt:'Dos grupos tienen la misma desviación estándar ($\\sigma=12$). El grupo A tiene media $\\bar{x}=55$ y el grupo B tiene media $\\bar{x}=80$. ¿Cuál grupo presenta mayor variabilidad relativa, según el coeficiente de variación?',
+    options:[{key:'A',text:'Grupo A'},{key:'B',text:'Grupo B'},{key:'C',text:'Ambos grupos tienen el mismo CV'}], correct:'A' },
+  { id:28, skill:4, diff:'Intermedio', prompt:'En un curso, un estudiante obtuvo 80 en un trabajo con ponderación 2, 90 en un examen con ponderación 3 y 70 en una tarea con ponderación 5. ¿Cuál es su calificación ponderada?',
+    options:[{key:'A',text:'75'},{key:'B',text:'78'},{key:'C',text:'80'}], correct:'B' },
+  { id:29, skill:4, diff:'Avanzado', prompt:'La calificación de un curso se determina según los rubros: I Prueba (20%, nota 60), II Prueba (25%, nota 75), Trabajo cotidiano (35%, nota 85), Tareas (10%, nota 95) y Asistencia (10%, nota 100). ¿Cuál es la calificación ponderada final del curso?',
+    options:[{key:'A',text:'78'},{key:'B',text:'80'},{key:'C',text:'82'}], correct:'B' },
+  { id:30, skill:4, diff:'Intermedio', prompt:'En una distribución de datos, la media aritmética es $\\bar{x}=55$ y la mediana es $Me=60$. ¿Cómo se clasifica la asimetría de esa distribución?',
+    options:[{key:'A',text:'Asimétrica negativa, porque $\\bar{x} < Me$'},{key:'B',text:'Asimétrica positiva, porque $\\bar{x} > Me$'},{key:'C',text:'Simétrica, porque $\\bar{x} = Me$'}], correct:'A' }
+];
+
+const skillNames = {
+  1:'El estudiante resume un grupo de datos mediante la moda, la media aritmética, la mediana, los cuartiles, el máximo y el mínimo',
+  2:'El estudiante resume la variabilidad de un grupo de datos mediante el recorrido, el RIQ, la varianza o la desviación estándar',
+  3:'El estudiante utiliza diagramas de cajas para comparar la posición y la variabilidad de uno o más grupos de datos',
+  4:'El estudiante aplica estandarización, coeficiente de variación o media ponderada para comparar o resumir datos'
+};
+
+const rubricRows = [
+  { skill:1, name:skillNames[1],
+    d0:'El estudiante no responde.',
+    d1:'El estudiante resume de forma incorrecta la moda, la media, la mediana, los cuartiles, el máximo o el mínimo en la mayoría de los ítems.',
+    d2:'El estudiante resume parcialmente la moda, la media, la mediana o los cuartiles en la mayoría de los ítems.',
+    d3:'El estudiante resume correctamente un grupo de datos mediante la moda, la media, la mediana, los cuartiles, el máximo y el mínimo en todos los ítems.',
+    tip:'El estudiante debe repasar el procedimiento para ordenar datos y calcular moda, media, mediana y cuartiles ($Q_k=\\dfrac{k(n+1)}{4}$).' },
+  { skill:2, name:skillNames[2],
+    d0:'El estudiante no responde.',
+    d1:'El estudiante resume de forma incorrecta la variabilidad de los datos mediante el recorrido, el RIQ, la varianza o la desviación estándar en la mayoría de los ítems.',
+    d2:'El estudiante resume parcialmente (con errores de procedimiento) la variabilidad de los datos en la mayoría de los ítems.',
+    d3:'El estudiante resume correctamente la variabilidad de un grupo de datos mediante el recorrido, el RIQ, la varianza o la desviación estándar en todos los ítems.',
+    tip:'El estudiante debe practicar las fórmulas $R=x_{max}-x_{min}$, $RIQ=Q_3-Q_1$ y $\\sigma^2=\\dfrac{\\sum(x-\\bar{x})^2}{n}$.' },
+  { skill:3, name:skillNames[3],
+    d0:'El estudiante no responde.',
+    d1:'El estudiante interpreta de forma incorrecta los diagramas de cajas planteados.',
+    d2:'El estudiante interpreta parcialmente (con errores) los diagramas de cajas planteados.',
+    d3:'El estudiante interpreta correctamente los diagramas de cajas para comparar la posición y la variabilidad de uno o más grupos en todos los ítems.',
+    tip:'El estudiante debe recordar que en un diagrama de cajas el mínimo, $Q_1$, la mediana, $Q_3$ y el máximo dividen los datos en cuatro partes del 25% cada una.' },
+  { skill:4, name:skillNames[4],
+    d0:'El estudiante no responde.',
+    d1:'El estudiante aplica de forma incorrecta la estandarización, el coeficiente de variación o la media ponderada.',
+    d2:'El estudiante aplica parcialmente (con errores de procedimiento) estos conceptos.',
+    d3:'El estudiante aplica en forma correcta la estandarización, el coeficiente de variación y la media ponderada en todos los ítems.',
+    tip:'El estudiante debe repasar $z=\\dfrac{x-\\bar{x}}{\\sigma}$, $CV=\\left(\\dfrac{\\sigma}{\\bar{x}}\\right)\\cdot100\\%$ y la media ponderada $\\bar{x}_p=\\dfrac{\\sum(w_i\\,x_i)}{\\sum w_i}$.' }
+];
+
+let selected = {};
+
+/* ---------- render questions ---------- */
+const qContainer = document.getElementById('questions');
+questions.forEach(q=>{
+  const card = document.createElement('div');
+  card.className='qcard';
+
+  const optsHtml = `<div class="opts">${q.options.map(o=>`
+    <label class="opt" data-q="${q.id}" data-k="${o.key}">
+      <input type="radio" name="q${q.id}" value="${o.key}">
+      <span>${o.key}) ${o.text}</span>
+    </label>`).join('')}</div>`;
+
+  card.innerHTML = `
+    <div class="qhead">
+      <div class="qnum">${q.id}</div>
+      <div class="qmeta">${q.diff} · ${skillNames[q.skill]}</div>
+    </div>
+    <p class="qprompt">${q.prompt}</p>
+    ${q.diagram ? `<div style="margin-bottom:14px;max-width:440px">${q.diagram}</div>` : ''}
+    ${optsHtml}
+  `;
+  qContainer.appendChild(card);
+});
+
+qContainer.addEventListener('change', e=>{
+  if(e.target.type==='radio'){
+    const qid = parseInt(e.target.name.replace('q',''));
+    const val = e.target.value;
+    selected[qid]=val;
+    document.querySelectorAll(`.opt[data-q="${qid}"]`).forEach(el=>{
+      el.classList.toggle('selected', el.getAttribute('data-k')===val);
+    });
+  }
+});
+
+document.getElementById('btn-clear').addEventListener('click', ()=>{
+  selected = {};
+  document.querySelectorAll('.opt input[type=radio]').forEach(r=>r.checked=false);
+  document.querySelectorAll('.opt.selected').forEach(el=>el.classList.remove('selected'));
+});
+
+/* ---------- tabs + progress ---------- */
+const visitedTabs = new Set(['rubrica']);
+function updateProgress(){
+  const total = document.querySelectorAll('.tab-btn').length;
+  const visited = visitedTabs.size;
+  document.getElementById('progress-fill').style.width = (visited/total*100)+'%';
+  document.getElementById('progress-label').textContent = `Progreso: ${visited}/${total} pestañas visitadas`;
+}
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+    visitedTabs.add(btn.dataset.tab);
+    updateProgress();
+    if(window.renderMathInElement){
+      renderMathInElement(document.getElementById('panel-'+btn.dataset.tab), {
+        delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]
+      });
+    }
+  });
+});
+updateProgress();
+
+/* ---------- grading ---------- */
+document.getElementById('btn-grade').addEventListener('click', ()=>{
+  const nombre = document.getElementById('input-nombre').value.trim();
+  const seccion = document.getElementById('input-seccion').value.trim();
+  if(!nombre || !seccion){
+    alert('El estudiante debe completar su nombre y su sección antes de calificar el cuaderno.');
+    if(!nombre) document.getElementById('input-nombre').focus();
+    else document.getElementById('input-seccion').focus();
+    return;
+  }
+  const missing = questions.filter(q=>!selected[q.id]);
+  if(missing.length){
+    alert('Faltan por responder ' + missing.length + ' ítem(s): ' + missing.map(q=>q.id).join(', ') + '.');
+    return;
+  }
+  gradeAndRender(nombre, seccion);
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelector('.tab-btn[data-tab="resultados"]').classList.add('active');
+  document.getElementById('panel-resultados').classList.add('active');
+  document.getElementById('resultados-actions').style.display='flex';
+  renderMath();
+});
+
+function renderMath(){
+  if(window.renderMathInElement){
+    renderMathInElement(document.body, {
+      delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]
+    });
+  }
+}
+
+function gradeAndRender(nombre, seccion){
+  let correctCount=0;
+  const rows = questions.map(q=>{
+    const chosen = selected[q.id];
+    const isCorrect = chosen===q.correct;
+    if(isCorrect) correctCount++;
+    return {id:q.id, skill:q.skill, isCorrect};
+  });
+
+  const bySkill = {};
+  rubricRows.forEach(r=>{ bySkill[r.skill] = rows.filter(x=>x.skill===r.skill); });
+
+  const levels = {};
+  let totalPts = 0;
+  rubricRows.forEach(r=>{
+    const items = bySkill[r.skill];
+    const nCorrect = items.filter(x=>x.isCorrect).length;
+    const n = items.length;
+    let lvl;
+    if(nCorrect===0) lvl=1;
+    else if(nCorrect===n) lvl=3;
+    else lvl=2;
+    levels[r.skill]=lvl;
+    totalPts += lvl;
+  });
+  const maxPts = rubricRows.length*3;
+
+  const pct = Math.round((correctCount/questions.length)*100);
+  const R = 40, C = 2*Math.PI*R;
+  const dash = (pct/100)*C;
+
+  let html = `
+  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;padding:12px 16px;background:#F5F3FA;border:1px solid #ECE7F5;border-radius:12px;font-size:14px;">
+    <span><b>Estudiante:</b> ${nombre}</span>
+    <span><b>Sección:</b> ${seccion}</span>
+  </div>
+  <div class="score-hero">
+    <div class="score-ring">
+      <svg width="96" height="96" viewBox="0 0 96 96">
+        <circle cx="48" cy="48" r="${R}" stroke="#4A4166" stroke-width="10" fill="none"/>
+        <circle cx="48" cy="48" r="${R}" stroke="#7C5CBF" stroke-width="10" fill="none"
+          stroke-dasharray="${dash} ${C}" stroke-linecap="round"/>
+      </svg>
+      <div class="pct">${pct}%</div>
+    </div>
+    <div class="score-text">
+      <h2>${correctCount} de ${questions.length} ítems correctos</h2>
+      <p>Puntaje según rúbrica: <b>${totalPts} / ${maxPts} puntos</b></p>
+    </div>
+  </div>
+
+  ${(() => {
+    const weak = rubricRows.filter(r => levels[r.skill] < 3);
+    if(weak.length === 0){
+      return `<div class="feedback-box"><b>¡Excelente trabajo!</b> Acertó todos los ítems en las cuatro habilidades evaluadas.</div>`;
+    }
+    return `<p class="lead" style="margin-bottom:10px"><b>💡 Retroalimentación</b> — refuerce lo siguiente antes de continuar:</p>
+    ${weak.map(r => `<div class="feedback-box"><b>${r.name}:</b> ${r.tip}</div>`).join('')}`;
+  })()}
+
+  <p class="lead" style="margin-bottom:10px"><b>Rúbrica evaluada</b> — el nivel obtenido en cada habilidad se resalta con un borde.</p>
+  <table class="rubric">
+    <thead><tr><th>Criterio / Indicador</th><th>0</th><th>1</th><th>2</th><th>3</th><th>Puntos obtenidos</th></tr></thead>
+    <tbody>
+    ${rubricRows.map(r=>`
+      <tr>
+        <td class="crit">${r.name}</td>
+        <td class="level0 ${levels[r.skill]===0?'achieved':''}">${r.d0}</td>
+        <td class="level1 ${levels[r.skill]===1?'achieved':''}">${r.d1}</td>
+        <td class="level2 ${levels[r.skill]===2?'achieved':''}">${r.d2}</td>
+        <td class="level3 ${levels[r.skill]===3?'achieved':''}">${r.d3}</td>
+        <td class="pts">${levels[r.skill]}</td>
+      </tr>`).join('')}
+      <tr class="total-row"><td colspan="5" style="text-align:right;padding-right:14px;">Puntos obtenidos</td><td class="pts">${totalPts} / ${maxPts}</td></tr>
+    </tbody>
+  </table>
+  `;
+
+  document.getElementById('resultados-content').innerHTML = html;
+}
+
+/* ---------- static rubric tab ---------- */
+(function(){
+  const el = document.getElementById('rubrica-static');
+  el.innerHTML = `
+  <table class="rubric">
+    <thead><tr><th>Criterio / Indicador</th><th>0</th><th>1</th><th>2</th><th>3</th><th>Puntos</th></tr></thead>
+    <tbody>
+    ${rubricRows.map(r=>`
+      <tr>
+        <td class="crit">${r.name}</td>
+        <td>${r.d0}</td>
+        <td>${r.d1}</td>
+        <td>${r.d2}</td>
+        <td>${r.d3}</td>
+        <td class="pts">3</td>
+      </tr>`).join('')}
+      <tr class="total-row"><td colspan="5" style="text-align:right;padding-right:14px;">Valor total</td><td class="pts">12</td></tr>
+    </tbody>
+  </table>`;
+})();
+
+/* ---------- PDF export ---------- */
+document.getElementById('btn-pdf').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btn-pdf');
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Generando PDF…';
+
+  const source = document.getElementById('resultados-content');
+  const prevWidth = source.style.width;
+  const prevMaxWidth = source.style.maxWidth;
+  source.style.width = '740px';
+  source.style.maxWidth = '740px';
+
+  try{
+    const canvas = await html2canvas(source, { scale:2, useCORS:true, backgroundColor:'#ffffff' });
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p','mm','a4');
+
+    const margin = 8;
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth - margin*2;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = margin;
+
+    pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+    heightLeft -= (pageHeight - margin*2);
+
+    while (heightLeft > 0){
+      position = margin - (imgHeight - heightLeft);
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+      heightLeft -= (pageHeight - margin*2);
+    }
+
+    pdf.save('resultado_estadistica.pdf');
+  }catch(err){
+    console.error(err);
+    alert('No se pudo generar el PDF. Intente nuevamente.');
+  }finally{
+    source.style.width = prevWidth;
+    source.style.maxWidth = prevMaxWidth;
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+});
+
+window.addEventListener('load', renderMath);
+</script>
+</body>
+</html>
